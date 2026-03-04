@@ -7,6 +7,7 @@ import {
   addDoc, 
   deleteDoc, 
   doc, 
+  setDoc,
   query, 
   orderBy,
   getDoc,
@@ -63,9 +64,18 @@ export default function AdminPanel() {
       const snapshot = await getDocs(collection(db, SETTINGS_COLLECTION));
       if (!snapshot.empty) {
         const data = snapshot.docs[0].data();
-        setGeneralSettings(prev => ({ ...prev, ...data }));
+        setGeneralSettings(prev => ({ ...prev, logo_url: data.logo_url || LOGO_URL }));
       }
       
+      // Fetch Visual Assets individually to avoid 1MB limit
+      const assetsSnap = await getDocs(collection(db, 'beatfest_visual_assets'));
+      const assetsData: any = {};
+      assetsSnap.forEach(doc => {
+        assetsData[doc.id] = doc.data().url;
+      });
+      
+      setGeneralSettings(prev => ({ ...prev, ...assetsData }));
+
       const carouselSnap = await getDocs(collection(db, 'global_carousel'));
       const carouselList = carouselSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setGeneralSettings(prev => ({ ...prev, global_carousel: carouselList }));
@@ -76,25 +86,36 @@ export default function AdminPanel() {
 
   const handleSaveSettings = async () => {
     try {
+      // Save Logo in Settings
       const snapshot = await getDocs(collection(db, SETTINGS_COLLECTION));
-      const settingsData = {
-        logo_url: generalSettings.logo_url,
-        tiki_url: generalSettings.tiki_url,
-        palm_url: generalSettings.palm_url,
-        crack1_url: generalSettings.crack1_url,
-        crack2_url: generalSettings.crack2_url,
-        texture_url: generalSettings.texture_url,
-      };
-
       if (snapshot.empty) {
-        await addDoc(collection(db, SETTINGS_COLLECTION), settingsData);
+        await addDoc(collection(db, SETTINGS_COLLECTION), { logo_url: generalSettings.logo_url });
       } else {
-        await updateDoc(doc(db, SETTINGS_COLLECTION, snapshot.docs[0].id), settingsData);
+        await updateDoc(doc(db, SETTINGS_COLLECTION, snapshot.docs[0].id), { logo_url: generalSettings.logo_url });
       }
-      alert('Configurações salvas!');
+
+      // Save Visual Assets individually in a separate collection
+      const assets = [
+        { id: 'tiki_url', url: generalSettings.tiki_url },
+        { id: 'palm_url', url: generalSettings.palm_url },
+        { id: 'crack1_url', url: generalSettings.crack1_url },
+        { id: 'crack2_url', url: generalSettings.crack2_url },
+        { id: 'texture_url', url: generalSettings.texture_url },
+      ];
+
+      for (const asset of assets) {
+        if (asset.url) {
+          // We use setDoc with a fixed ID to ensure we only have one document per asset type
+          // This avoids the 1MB limit per document because each image is its own document
+          const assetRef = doc(db, 'beatfest_visual_assets', asset.id);
+          await setDoc(assetRef, { url: asset.url });
+        }
+      }
+      
+      alert('Configurações salvas com sucesso!');
     } catch (err) {
       console.error(err);
-      alert('Erro ao salvar configurações');
+      alert('Erro ao salvar configurações. Verifique se as imagens não são muito grandes.');
     }
   };
 

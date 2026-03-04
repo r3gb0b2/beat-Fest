@@ -26,11 +26,18 @@ export default function StateSelector() {
 
         // Fetch Settings (Logo and Visual Identity)
         const settingsSnap = await getDocs(collection(db, SETTINGS_COLLECTION));
+        const visualData: any = {};
         if (!settingsSnap.empty) {
           const data = settingsSnap.docs[0].data();
           setLogoUrl(data.logo_url || LOGO_URL_DEFAULT);
-          setVisualSettings(data);
         }
+
+        // Fetch Individual Visual Assets
+        const assetsSnap = await getDocs(collection(db, 'beatfest_visual_assets'));
+        assetsSnap.forEach(doc => {
+          visualData[doc.id] = doc.data().url;
+        });
+        setVisualSettings(visualData);
 
         // Fetch Global Carousel
         const carouselSnap = await getDocs(collection(db, 'global_carousel'));
