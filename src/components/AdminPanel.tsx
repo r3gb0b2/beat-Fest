@@ -264,7 +264,7 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="h-screen bg-zinc-950 text-white flex overflow-hidden">
+    <div className="fixed inset-0 bg-zinc-950 text-white flex overflow-hidden">
       {/* Sidebar */}
       <aside className="w-64 bg-zinc-900 border-r border-zinc-800 p-6 flex flex-col gap-8">
         <div className="flex items-center gap-3">

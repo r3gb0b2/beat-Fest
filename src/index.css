@@ -12,8 +12,16 @@
 }
 
 @layer base {
-  html, body {
-    @apply bg-black text-white font-sans overflow-x-hidden;
+  html {
+    overflow: hidden;
+    height: 100%;
+  }
+  body {
+    @apply bg-black text-white font-sans;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    margin: 0;
   }
 }
 
