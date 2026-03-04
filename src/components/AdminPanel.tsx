@@ -286,7 +286,7 @@ export default function AdminPanel() {
             onClick={() => setView('states')}
             className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${view === 'states' ? 'bg-beat-pink text-white' : 'hover:bg-zinc-800 text-zinc-400'}`}
           >
-            <Map className="w-5 h-5" /> Estados
+            <Map className="w-5 h-5" /> Cidades
           </button>
           <button 
             onClick={() => setView('leads')}
@@ -314,12 +314,12 @@ export default function AdminPanel() {
         {view === 'states' ? (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold">Gerenciar Estados</h1>
+              <h1 className="text-3xl font-bold">Gerenciar Cidades</h1>
               <button 
                 onClick={() => { resetForm(); setIsAdding(true); }}
                 className="bg-beat-pink hover:bg-beat-pink/80 px-6 py-3 rounded-xl font-bold flex items-center gap-2"
               >
-                <Plus className="w-5 h-5" /> Novo Estado
+                <Plus className="w-5 h-5" /> Nova Cidade
               </button>
             </div>
 
@@ -327,7 +327,7 @@ export default function AdminPanel() {
               <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
                 <form onSubmit={handleAddState} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-zinc-500">Nome do Estado</label>
+                    <label className="text-sm font-bold text-zinc-500">Nome da Cidade</label>
                     <input 
                       required
                       className="w-full bg-black border border-zinc-800 p-3 rounded-lg" 
@@ -474,7 +474,7 @@ export default function AdminPanel() {
                 value={filterState}
                 onChange={e => setFilterState(e.target.value)}
               >
-                <option value="all">Todos os Estados</option>
+                <option value="all">Todas as Cidades</option>
                 {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
@@ -482,7 +482,7 @@ export default function AdminPanel() {
               <table className="w-full text-left">
                 <thead className="bg-zinc-800 text-zinc-400 text-sm uppercase font-bold">
                   <tr>
-                    <th className="p-4">Nome/Estado</th>
+                    <th className="p-4">Nome/Cidade</th>
                     <th className="p-4">Contato</th>
                     <th className="p-4">CPF</th>
                     <th className="p-4">Data</th>
@@ -519,7 +519,7 @@ export default function AdminPanel() {
                 </h2>
                 <div className="space-y-4 text-sm text-zinc-400">
                   <div className="p-4 bg-black rounded-xl border border-zinc-800">
-                    <p className="font-bold text-white mb-1">Capa do Estado</p>
+                    <p className="font-bold text-white mb-1">Capa da Cidade</p>
                     <p>300x300px (Quadrado)</p>
                   </div>
                   <div className="p-4 bg-black rounded-xl border border-zinc-800">

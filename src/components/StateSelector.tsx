@@ -129,7 +129,7 @@ export default function StateSelector() {
         </motion.div>
 
         <h1 className="text-4xl md:text-6xl font-black uppercase italic text-white beat-text-stroke mb-12 text-center tracking-tighter">
-          Escolha seu estado
+          Escolha sua cidade
         </h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl w-full">

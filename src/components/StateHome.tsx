@@ -138,7 +138,7 @@ export default function StateHome() {
   };
 
   if (loading) return <div className="min-h-screen bg-beat-pink flex items-center justify-center font-black text-white text-3xl italic uppercase beat-text-stroke">Carregando...</div>;
-  if (!state) return <div className="min-h-screen bg-beat-pink flex items-center justify-center font-black text-white text-3xl italic uppercase beat-text-stroke">Estado não encontrado.</div>;
+  if (!state) return <div className="min-h-screen bg-beat-pink flex items-center justify-center font-black text-white text-3xl italic uppercase beat-text-stroke">Cidade não encontrada.</div>;
 
   return (
     <div className="min-h-screen bg-beat-pink text-white selection:bg-beat-green selection:text-black relative">
