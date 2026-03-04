@@ -9,7 +9,8 @@ import {
   doc, 
   query, 
   orderBy,
-  getDoc
+  getDoc,
+  updateDoc
 } from 'firebase/firestore';
 
 const LOGO_URL = "https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923";
@@ -23,6 +24,7 @@ export default function AdminPanel() {
   const [leads, setLeads] = useState<any[]>([]);
   const [filterState, setFilterState] = useState<string>('all');
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newState, setNewState] = useState({
     name: '',
     slug: '',
@@ -33,7 +35,8 @@ export default function AdminPanel() {
     sales_location: '',
     instagram_url: '',
     facebook_url: '',
-    tiktok_url: ''
+    tiktok_url: '',
+    pre_registration_enabled: true
   });
 
   const [generalSettings, setGeneralSettings] = useState({
@@ -147,28 +150,58 @@ export default function AdminPanel() {
     e.preventDefault();
     setError(null);
     try {
-      await addDoc(collection(db, STATES_COLLECTION), {
-        ...newState,
-        active: 1
-      });
-      setNewState({ 
-        name: '', 
-        slug: '', 
-        cover_image: '', 
-        banner_desktop: '', 
-        banner_mobile: '', 
-        event_date: '', 
-        sales_location: '',
-        instagram_url: '',
-        facebook_url: '',
-        tiktok_url: ''
-      });
-      setIsAdding(false);
+      if (editingId) {
+        await updateDoc(doc(db, STATES_COLLECTION, editingId), {
+          ...newState
+        });
+      } else {
+        await addDoc(collection(db, STATES_COLLECTION), {
+          ...newState,
+          active: 1
+        });
+      }
+      resetForm();
       fetchStates();
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Erro ao salvar no Firebase. Verifique as regras do Firestore.');
+      setError(err.message || 'Erro ao salvar no Firebase.');
     }
+  };
+
+  const resetForm = () => {
+    setNewState({ 
+      name: '', 
+      slug: '', 
+      cover_image: '', 
+      banner_desktop: '', 
+      banner_mobile: '', 
+      event_date: '', 
+      sales_location: '',
+      instagram_url: '',
+      facebook_url: '',
+      tiktok_url: '',
+      pre_registration_enabled: true
+    });
+    setIsAdding(false);
+    setEditingId(null);
+  };
+
+  const handleEditState = (state: any) => {
+    setNewState({
+      name: state.name || '',
+      slug: state.slug || '',
+      cover_image: state.cover_image || '',
+      banner_desktop: state.banner_desktop || '',
+      banner_mobile: state.banner_mobile || '',
+      event_date: state.event_date || '',
+      sales_location: state.sales_location || '',
+      instagram_url: state.instagram_url || '',
+      facebook_url: state.facebook_url || '',
+      tiktok_url: state.tiktok_url || '',
+      pre_registration_enabled: state.pre_registration_enabled !== undefined ? state.pre_registration_enabled : true
+    });
+    setEditingId(state.id);
+    setIsAdding(true);
   };
 
   const handleDeleteState = async (id: string) => {
@@ -250,7 +283,7 @@ export default function AdminPanel() {
             <div className="flex justify-between items-center">
               <h1 className="text-3xl font-bold">Gerenciar Estados</h1>
               <button 
-                onClick={() => setIsAdding(true)}
+                onClick={() => { resetForm(); setIsAdding(true); }}
                 className="bg-beat-pink hover:bg-beat-pink/80 px-6 py-3 rounded-xl font-bold flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" /> Novo Estado
@@ -333,6 +366,19 @@ export default function AdminPanel() {
                       placeholder="https://tiktok.com/@..."
                     />
                   </div>
+                  <div className="md:col-span-2 flex items-center gap-4 bg-black/50 p-4 rounded-xl border border-zinc-800">
+                    <div className="flex-1">
+                      <p className="font-bold">Habilitar Pré-Cadastro</p>
+                      <p className="text-xs text-zinc-500 text-balance">Se desativado, o formulário de cadastro não aparecerá para esta cidade.</p>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => setNewState({...newState, pre_registration_enabled: !newState.pre_registration_enabled})}
+                      className={`w-14 h-8 rounded-full transition-colors relative ${newState.pre_registration_enabled ? 'bg-beat-green' : 'bg-zinc-700'}`}
+                    >
+                      <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${newState.pre_registration_enabled ? 'right-1' : 'left-1'}`} />
+                    </button>
+                  </div>
                   <div className="md:col-span-2 flex flex-col gap-4">
                     {error && (
                       <div className="bg-red-500/20 text-red-500 p-4 rounded-xl border border-red-500/30 font-bold">
@@ -350,15 +396,32 @@ export default function AdminPanel() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {states.map(state => (
-                <div key={state.id} className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden group">
+                <div 
+                  key={state.id} 
+                  onClick={() => handleEditState(state)}
+                  className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden group cursor-pointer hover:border-beat-pink transition-colors"
+                >
                   <div className="aspect-video relative">
                     <img src={state.cover_image || 'https://picsum.photos/seed/state/400/200'} className="w-full h-full object-cover" />
                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleDeleteState(state.id)} className="p-2 bg-red-500 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteState(state.id);
+                        }} 
+                        className="p-2 bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{state.name}</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xl font-bold">{state.name}</h3>
+                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${state.pre_registration_enabled !== false ? 'bg-beat-green/20 text-beat-green' : 'bg-red-500/20 text-red-500'}`}>
+                        {state.pre_registration_enabled !== false ? 'Cadastro ON' : 'Cadastro OFF'}
+                      </span>
+                    </div>
                     <p className="text-zinc-500 text-sm mb-4">/{state.slug}</p>
                     <div className="flex items-center gap-4 text-xs font-bold text-zinc-400">
                       <span className="flex items-center gap-1"><ImageIcon className="w-3 h-3" /> Banner OK</span>

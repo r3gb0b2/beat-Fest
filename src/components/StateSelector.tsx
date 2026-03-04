@@ -103,28 +103,6 @@ export default function StateSelector() {
             </motion.div>
           ))}
         </div>
-
-        {/* Global Carousel Section */}
-        {carousel.length > 0 && (
-          <div className="mt-24 w-full max-w-7xl">
-            <h2 className="text-3xl md:text-5xl font-black uppercase italic text-white beat-text-stroke mb-12 text-center tracking-tighter">
-              Momentos Beat Fest
-            </h2>
-            <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide snap-x px-4">
-              {carousel.map((img, idx) => (
-                <motion.div
-                  key={img.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="flex-none w-[280px] md:w-[450px] aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-2xl snap-center"
-                >
-                  <img src={img.image_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Bottom Blue Section (Aguardem Vibe) */}
