@@ -12,10 +12,16 @@ import {
   getDoc
 } from 'firebase/firestore';
 
+const LOGO_URL = "https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923";
+const STATES_COLLECTION = "beatfest_states_v2";
+const LEADS_COLLECTION = "beatfest_leads_v2";
+const SETTINGS_COLLECTION = "beatfest_settings_v1";
+
 export default function AdminPanel() {
-  const [view, setView] = useState<'states' | 'leads'>('states');
+  const [view, setView] = useState<'states' | 'leads' | 'settings'>('states');
   const [states, setStates] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
+  const [filterState, setFilterState] = useState<string>('all');
   const [isAdding, setIsAdding] = useState(false);
   const [newState, setNewState] = useState({
     name: '',
@@ -37,7 +43,7 @@ export default function AdminPanel() {
 
   const fetchStates = async () => {
     try {
-      const snapshot = await getDocs(collection(db, 'states'));
+      const snapshot = await getDocs(collection(db, STATES_COLLECTION));
       const statesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setStates(statesList);
     } catch (err) {
@@ -48,13 +54,13 @@ export default function AdminPanel() {
 
   const fetchLeads = async () => {
     try {
-      const q = query(collection(db, 'leads'), orderBy('created_at', 'desc'));
+      const q = query(collection(db, LEADS_COLLECTION), orderBy('created_at', 'desc'));
       const snapshot = await getDocs(q);
       const leadsList = await Promise.all(snapshot.docs.map(async leadDoc => {
         const data = leadDoc.data();
         let stateName = 'N/A';
         try {
-          const stateSnap = await getDoc(doc(db, 'states', data.state_id));
+          const stateSnap = await getDoc(doc(db, STATES_COLLECTION, data.state_id));
           if (stateSnap.exists()) stateName = stateSnap.data().name;
         } catch (e) {}
         return { id: leadDoc.id, ...data, state_name: stateName };
@@ -71,7 +77,7 @@ export default function AdminPanel() {
     e.preventDefault();
     setError(null);
     try {
-      await addDoc(collection(db, 'states'), {
+      await addDoc(collection(db, STATES_COLLECTION), {
         ...newState,
         active: 1
       });
@@ -87,13 +93,17 @@ export default function AdminPanel() {
   const handleDeleteState = async (id: string) => {
     if (confirm('Tem certeza?')) {
       try {
-        await deleteDoc(doc(db, 'states', id));
+        await deleteDoc(doc(db, STATES_COLLECTION, id));
         fetchStates();
       } catch (err: any) {
         alert('Erro ao excluir: ' + err.message);
       }
     }
   };
+
+  const filteredLeads = filterState === 'all' 
+    ? leads 
+    : leads.filter(l => l.state_id === filterState);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     const file = e.target.files?.[0];
@@ -136,6 +146,12 @@ export default function AdminPanel() {
             className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${view === 'leads' ? 'bg-beat-pink text-white' : 'hover:bg-zinc-800 text-zinc-400'}`}
           >
             <Users className="w-5 h-5" /> Leads
+          </button>
+          <button 
+            onClick={() => setView('settings')}
+            className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${view === 'settings' ? 'bg-beat-pink text-white' : 'hover:bg-zinc-800 text-zinc-400'}`}
+          >
+            <Layout className="w-5 h-5" /> Configurações
           </button>
         </nav>
 
@@ -245,9 +261,19 @@ export default function AdminPanel() {
               ))}
             </div>
           </div>
-        ) : (
+        ) : view === 'leads' ? (
           <div className="space-y-8">
-            <h1 className="text-3xl font-bold">Leads Capturados</h1>
+            <div className="flex justify-between items-center">
+              <h1 className="text-3xl font-bold">Leads Capturados</h1>
+              <select 
+                className="bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-sm font-bold outline-none"
+                value={filterState}
+                onChange={e => setFilterState(e.target.value)}
+              >
+                <option value="all">Todos os Estados</option>
+                {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
             <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
               <table className="w-full text-left">
                 <thead className="bg-zinc-800 text-zinc-400 text-sm uppercase font-bold">
@@ -259,7 +285,7 @@ export default function AdminPanel() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800">
-                  {leads.map(lead => (
+                  {filteredLeads.map(lead => (
                     <tr key={lead.id} className="hover:bg-zinc-800/50 transition-colors">
                       <td className="p-4">
                         <div className="font-bold">{lead.email}</div>
@@ -275,7 +301,47 @@ export default function AdminPanel() {
                   ))}
                 </tbody>
               </table>
-              {leads.length === 0 && <div className="p-20 text-center text-zinc-500">Nenhum lead capturado ainda.</div>}
+              {filteredLeads.length === 0 && <div className="p-20 text-center text-zinc-500">Nenhum lead encontrado para este filtro.</div>}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-12">
+            <h1 className="text-3xl font-bold">Configurações Gerais</h1>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 space-y-6">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-beat-green">
+                  <Layout className="w-6 h-6" /> Gabarito de Artes
+                </h2>
+                <div className="space-y-4 text-sm text-zinc-400">
+                  <div className="p-4 bg-black rounded-xl border border-zinc-800">
+                    <p className="font-bold text-white mb-1">Capa do Estado</p>
+                    <p>300x300px (Quadrado)</p>
+                  </div>
+                  <div className="p-4 bg-black rounded-xl border border-zinc-800">
+                    <p className="font-bold text-white mb-1">Banner Desktop</p>
+                    <p>1920x800px (21:9)</p>
+                  </div>
+                  <div className="p-4 bg-black rounded-xl border border-zinc-800">
+                    <p className="font-bold text-white mb-1">Banner Mobile</p>
+                    <p>800x1000px (4:5)</p>
+                  </div>
+                  <div className="p-4 bg-black rounded-xl border border-zinc-800">
+                    <p className="font-bold text-white mb-1">Carrossel Edições</p>
+                    <p>1280x720px (16:9)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 space-y-6">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-beat-pink">
+                  <ImageIcon className="w-6 h-6" /> Logo Oficial
+                </h2>
+                <div className="p-6 bg-black rounded-xl border border-zinc-800 flex flex-col items-center gap-4">
+                  <img src={LOGO_URL} className="h-20 object-contain" alt="Logo" />
+                  <p className="text-xs text-zinc-500 text-center">A logo é carregada automaticamente a partir do link oficial.</p>
+                </div>
+              </div>
             </div>
           </div>
         )}

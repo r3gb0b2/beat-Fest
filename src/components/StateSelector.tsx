@@ -4,6 +4,9 @@ import { motion } from 'motion/react';
 import { db } from '../lib/firebase-client';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
+const LOGO_URL = "https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923";
+const STATES_COLLECTION = "beatfest_states_v2";
+
 export default function StateSelector() {
   const [states, setStates] = useState<any[]>([]);
   const navigate = useNavigate();
@@ -11,7 +14,7 @@ export default function StateSelector() {
   useEffect(() => {
     const fetchStates = async () => {
       try {
-        const q = query(collection(db, 'states'), where('active', '==', 1));
+        const q = query(collection(db, STATES_COLLECTION), where('active', '==', 1));
         const snapshot = await getDocs(q);
         const statesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setStates(statesList);
@@ -49,13 +52,10 @@ export default function StateSelector() {
           <div className="absolute inset-0 bg-beat-green rounded-[40%_60%_70%_30%/40%_50%_60%_40%] scale-150 blur-2xl opacity-50 -z-10" />
           
           <img 
-            src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/logo.png" 
+            src={LOGO_URL} 
             alt="Beat Fest Logo" 
             className="h-40 md:h-56 mx-auto drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]"
             referrerPolicy="no-referrer"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/beatfest/400/200';
-            }}
           />
         </motion.div>
 

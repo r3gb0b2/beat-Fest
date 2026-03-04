@@ -12,6 +12,10 @@ import {
   addDoc 
 } from 'firebase/firestore';
 
+const LOGO_URL = "https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923";
+const STATES_COLLECTION = "beatfest_states_v2";
+const LEADS_COLLECTION = "beatfest_leads_v2";
+
 export default function StateHome() {
   const { slug } = useParams();
   const [state, setState] = useState<any>(null);
@@ -31,7 +35,7 @@ export default function StateHome() {
   useEffect(() => {
     const fetchState = async () => {
       try {
-        const q = query(collection(db, 'states'), where('slug', '==', slug), limit(1));
+        const q = query(collection(db, STATES_COLLECTION), where('slug', '==', slug), limit(1));
         const snapshot = await getDocs(q);
         
         if (snapshot.empty) {
@@ -62,17 +66,17 @@ export default function StateHome() {
 
     try {
       // Check for duplicates
-      const emailQ = query(collection(db, 'leads'), where('email', '==', formData.email), limit(1));
+      const emailQ = query(collection(db, LEADS_COLLECTION), where('email', '==', formData.email), limit(1));
       const emailCheck = await getDocs(emailQ);
       
-      const cpfQ = query(collection(db, 'leads'), where('cpf', '==', formData.cpf), limit(1));
+      const cpfQ = query(collection(db, LEADS_COLLECTION), where('cpf', '==', formData.cpf), limit(1));
       const cpfCheck = await getDocs(cpfQ);
       
       if (!emailCheck.empty || !cpfCheck.empty) {
         throw new Error('E-mail ou CPF já cadastrado.');
       }
 
-      await addDoc(collection(db, 'leads'), {
+      await addDoc(collection(db, LEADS_COLLECTION), {
         ...formData,
         state_id: state.id,
         created_at: new Date().toISOString()
@@ -94,19 +98,19 @@ export default function StateHome() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center">Carregando...</div>;
-  if (!state) return <div className="min-h-screen bg-black flex items-center justify-center">Estado não encontrado.</div>;
+  if (loading) return <div className="min-h-screen bg-beat-pink flex items-center justify-center font-black text-white text-3xl italic uppercase beat-text-stroke">Carregando...</div>;
+  if (!state) return <div className="min-h-screen bg-beat-pink flex items-center justify-center font-black text-white text-3xl italic uppercase beat-text-stroke">Estado não encontrado.</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-beat-pink text-white selection:bg-beat-green selection:text-black">
       {/* Header Logo */}
-      <header className="py-8 flex justify-center">
+      <header className="py-12 flex justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-beat-green rounded-[40%_60%_70%_30%/40%_50%_60%_40%] scale-150 blur-3xl opacity-30 -z-10" />
         <Link to="/">
           <img 
-            src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/logo.png" 
+            src={LOGO_URL} 
             alt="Beat Fest" 
-            className="h-24 md:h-32"
-            onError={(e) => (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/beatfest/400/200'}
+            className="h-24 md:h-32 drop-shadow-2xl"
           />
         </Link>
       </header>
@@ -158,93 +162,96 @@ export default function StateHome() {
       </section>
 
       {/* Pre-registration Form */}
-      <section className="bg-zinc-900 py-20 px-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-12">
-            <h3 className="text-4xl font-black uppercase italic mb-4">Pré-Cadastro</h3>
-            <p className="text-zinc-400 text-lg">Cadastre-se para receber o link de vendas em primeira mão e garantir seu lugar no Beat Fest.</p>
+      <section className="bg-beat-blue py-24 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/textura.png" alt="" className="w-full h-full object-cover" />
+        </div>
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h3 className="text-5xl md:text-7xl font-black uppercase italic mb-4 beat-text-stroke text-beat-yellow">Pré-Cadastro</h3>
+            <p className="text-white text-xl font-bold max-w-2xl mx-auto">Cadastre-se para receber o link de vendas em primeira mão e garantir seu lugar no Beat Fest.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase text-zinc-500">WhatsApp</label>
+          <form onSubmit={handleSubmit} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-beat-yellow ml-2">WhatsApp</label>
               <input 
                 required
                 type="text" 
                 placeholder="(00) 00000-0000"
-                className="w-full bg-black border-2 border-zinc-800 rounded-xl p-4 focus:border-beat-pink outline-none transition-colors"
+                className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                 value={formData.whatsapp}
                 onChange={e => setFormData({...formData, whatsapp: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase text-zinc-500">E-mail</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-beat-yellow ml-2">E-mail</label>
               <input 
                 required
                 type="email" 
                 placeholder="seu@email.com"
-                className="w-full bg-black border-2 border-zinc-800 rounded-xl p-4 focus:border-beat-pink outline-none transition-colors"
+                className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                 value={formData.email}
                 onChange={e => setFormData({...formData, email: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase text-zinc-500">Data de Nascimento</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-beat-yellow ml-2">Nascimento</label>
               <input 
                 required
                 type="date" 
-                className="w-full bg-black border-2 border-zinc-800 rounded-xl p-4 focus:border-beat-pink outline-none transition-colors"
+                className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold focus:ring-4 ring-beat-pink outline-none transition-all"
                 value={formData.dob}
                 onChange={e => setFormData({...formData, dob: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase text-zinc-500">CPF</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-beat-yellow ml-2">CPF</label>
               <input 
                 required
                 type="text" 
                 placeholder="000.000.000-00"
-                className="w-full bg-black border-2 border-zinc-800 rounded-xl p-4 focus:border-beat-pink outline-none transition-colors"
+                className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                 value={formData.cpf}
                 onChange={e => setFormData({...formData, cpf: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase text-zinc-500">Instagram</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-beat-yellow ml-2">Instagram</label>
               <input 
                 type="text" 
                 placeholder="@usuario"
-                className="w-full bg-black border-2 border-zinc-800 rounded-xl p-4 focus:border-beat-pink outline-none transition-colors"
+                className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                 value={formData.instagram}
                 onChange={e => setFormData({...formData, instagram: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase text-zinc-500">TikTok</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-beat-yellow ml-2">TikTok</label>
               <input 
                 type="text" 
                 placeholder="@usuario"
-                className="w-full bg-black border-2 border-zinc-800 rounded-xl p-4 focus:border-beat-pink outline-none transition-colors"
+                className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                 value={formData.tiktok}
                 onChange={e => setFormData({...formData, tiktok: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase text-zinc-500">Profissão</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-beat-yellow ml-2">Profissão</label>
               <input 
                 type="text" 
                 placeholder="Sua profissão"
-                className="w-full bg-black border-2 border-zinc-800 rounded-xl p-4 focus:border-beat-pink outline-none transition-colors"
+                className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                 value={formData.profession}
                 onChange={e => setFormData({...formData, profession: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase text-zinc-500">Colégio ou Faculdade</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-beat-yellow ml-2">Instituição</label>
               <input 
                 type="text" 
                 placeholder="Nome da instituição"
-                className="w-full bg-black border-2 border-zinc-800 rounded-xl p-4 focus:border-beat-pink outline-none transition-colors"
+                className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                 value={formData.education}
                 onChange={e => setFormData({...formData, education: e.target.value})}
               />
@@ -252,15 +259,15 @@ export default function StateHome() {
             
             <button 
               type="submit"
-              className="md:col-span-2 bg-beat-pink hover:bg-beat-pink/80 text-white font-black uppercase italic text-2xl py-6 rounded-2xl transition-all transform hover:scale-[1.02] flex items-center justify-center gap-3 mt-4"
+              className="col-span-2 md:col-span-4 bg-beat-green hover:bg-beat-green/90 text-black font-black uppercase italic text-2xl py-6 rounded-2xl transition-all transform hover:scale-[1.02] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-3 mt-4"
             >
               <Send className="w-8 h-8" />
-              Quero Garantir Meu Ingresso
+              Garantir Ingresso
             </button>
 
             {status.type && (
-              <div className={`md:col-span-2 p-4 rounded-xl flex items-center gap-3 font-bold ${status.type === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                {status.type === 'success' ? <CheckCircle2 /> : <AlertCircle />}
+              <div className={`col-span-2 md:col-span-4 p-6 rounded-2xl flex items-center gap-3 font-black uppercase italic border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${status.type === 'success' ? 'bg-beat-green text-black' : 'bg-red-500 text-white'}`}>
+                {status.type === 'success' ? <CheckCircle2 className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
                 {status.message}
               </div>
             )}
@@ -270,19 +277,26 @@ export default function StateHome() {
 
       {/* Carousel Section */}
       {state.carousel && state.carousel.length > 0 && (
-        <section className="py-20 bg-black overflow-hidden">
-          <div className="max-w-6xl mx-auto px-6">
-            <h3 className="text-4xl font-black uppercase italic mb-12 text-center">Edições Anteriores</h3>
-            <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide snap-x">
+        <section className="py-24 bg-beat-green overflow-hidden relative">
+          <div className="absolute inset-0 opacity-10">
+            <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/textura-2.png" alt="" className="w-full h-full object-cover" />
+          </div>
+          <div className="max-w-7xl mx-auto px-6 relative z-10">
+            <h3 className="text-5xl md:text-7xl font-black uppercase italic mb-16 text-center beat-text-stroke text-white">Edições Anteriores</h3>
+            <div className="flex gap-8 overflow-x-auto pb-12 scrollbar-hide snap-x">
               {state.carousel.map((img: any) => (
-                <div key={img.id} className="flex-none w-80 md:w-96 aspect-video rounded-2xl overflow-hidden snap-center border-2 border-zinc-800">
+                <motion.div 
+                  key={img.id} 
+                  whileHover={{ scale: 1.05, rotate: 2 }}
+                  className="flex-none w-[300px] md:w-[500px] aspect-video rounded-3xl overflow-hidden snap-center border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+                >
                   <img 
                     src={img.image_url} 
                     alt="Edição Anterior" 
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                   />
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -290,10 +304,11 @@ export default function StateHome() {
       )}
 
       {/* Footer */}
-      <footer className="py-12 border-t border-zinc-900 text-center text-zinc-500">
-        <p>© 2026 Beat Fest. Todos os direitos reservados.</p>
-        <div className="flex justify-center gap-6 mt-4">
-          <Instagram className="w-6 h-6 hover:text-beat-pink cursor-pointer transition-colors" />
+      <footer className="py-16 bg-black text-center text-white">
+        <img src={LOGO_URL} alt="Beat Fest" className="h-16 mx-auto mb-8 opacity-50 grayscale" />
+        <p className="font-bold uppercase tracking-widest text-sm opacity-50">© 2026 Beat Fest. Todos os direitos reservados.</p>
+        <div className="flex justify-center gap-8 mt-8">
+          <Instagram className="w-8 h-8 hover:text-beat-pink cursor-pointer transition-colors" />
         </div>
       </footer>
     </div>
