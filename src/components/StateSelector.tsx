@@ -11,6 +11,7 @@ const SETTINGS_COLLECTION = "beatfest_settings_v1";
 export default function StateSelector() {
   const [states, setStates] = useState<any[]>([]);
   const [logoUrl, setLogoUrl] = useState(LOGO_URL_DEFAULT);
+  const [visualSettings, setVisualSettings] = useState<any>({});
   const [carousel, setCarousel] = useState<any[]>([]);
   const navigate = useNavigate();
 
@@ -23,10 +24,12 @@ export default function StateSelector() {
         const statesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setStates(statesList);
 
-        // Fetch Settings (Logo)
+        // Fetch Settings (Logo and Visual Identity)
         const settingsSnap = await getDocs(collection(db, SETTINGS_COLLECTION));
         if (!settingsSnap.empty) {
-          setLogoUrl(settingsSnap.docs[0].data().logo_url || LOGO_URL_DEFAULT);
+          const data = settingsSnap.docs[0].data();
+          setLogoUrl(data.logo_url || LOGO_URL_DEFAULT);
+          setVisualSettings(data);
         }
 
         // Fetch Global Carousel
@@ -43,50 +46,62 @@ export default function StateSelector() {
   return (
     <div className="min-h-screen bg-beat-pink flex flex-col items-center justify-between overflow-hidden relative">
       {/* Decorative Elements from Assets */}
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923" 
-        alt="" 
-        className="absolute top-10 left-10 w-32 md:w-48 opacity-80 rotate-[-15deg] pointer-events-none"
-        referrerPolicy="no-referrer"
-      />
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923" 
-        alt="" 
-        className="absolute top-20 right-[-20px] w-32 md:w-48 opacity-80 rotate-[20deg] pointer-events-none scale-x-[-1]"
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.palm_url && (
+        <>
+          <img 
+            src={visualSettings.palm_url} 
+            alt="" 
+            className="absolute top-10 left-10 w-32 md:w-48 opacity-80 rotate-[-15deg] pointer-events-none"
+            referrerPolicy="no-referrer"
+          />
+          <img 
+            src={visualSettings.palm_url} 
+            alt="" 
+            className="absolute top-20 right-[-20px] w-32 md:w-48 opacity-80 rotate-[20deg] pointer-events-none scale-x-[-1]"
+            referrerPolicy="no-referrer"
+          />
+        </>
+      )}
 
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/401a755b-4375-4927-910c-99f57989393e"
-        alt=""
-        className="absolute bottom-40 left-[-50px] w-64 opacity-20 pointer-events-none z-0"
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.crack1_url && (
+        <img 
+          src={visualSettings.crack1_url}
+          alt=""
+          className="absolute bottom-40 left-[-50px] w-64 opacity-20 pointer-events-none z-0"
+          referrerPolicy="no-referrer"
+        />
+      )}
 
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/64062086-486a-4976-857e-07318f773634"
-        alt=""
-        className="absolute bottom-20 right-[-50px] w-64 opacity-20 pointer-events-none z-0"
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.crack2_url && (
+        <img 
+          src={visualSettings.crack2_url}
+          alt=""
+          className="absolute bottom-20 right-[-50px] w-64 opacity-20 pointer-events-none z-0"
+          referrerPolicy="no-referrer"
+        />
+      )}
 
-      <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
-        alt=""
-        className="absolute top-1/2 left-[-100px] w-64 opacity-30 pointer-events-none z-0"
-        animate={{ x: [0, 20, 0], rotate: [0, 10, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.tiki_url && (
+        <>
+          <motion.img 
+            src={visualSettings.tiki_url}
+            alt=""
+            className="absolute top-1/2 left-[-100px] w-64 opacity-30 pointer-events-none z-0"
+            animate={{ x: [0, 20, 0], rotate: [0, 10, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            referrerPolicy="no-referrer"
+          />
 
-      <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
-        alt=""
-        className="absolute top-1/4 right-[-50px] w-48 opacity-30 pointer-events-none z-0"
-        animate={{ y: [0, 30, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        referrerPolicy="no-referrer"
-      />
+          <motion.img 
+            src={visualSettings.tiki_url}
+            alt=""
+            className="absolute top-1/4 right-[-50px] w-48 opacity-30 pointer-events-none z-0"
+            animate={{ y: [0, 30, 0], scale: [1, 1.1, 1] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            referrerPolicy="no-referrer"
+          />
+        </>
+      )}
 
       {/* Main Content Area (Green Shape Vibe) */}
       <div className="flex-1 flex flex-col items-center justify-center w-full z-10 px-4 py-20">
@@ -140,14 +155,15 @@ export default function StateSelector() {
       {/* Bottom Blue Section (Aguardem Vibe) */}
       <div className="w-full bg-beat-blue py-12 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
-          <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/textura.png" alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          {visualSettings.texture_url && (
+            <img src={visualSettings.texture_url} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          )}
         </div>
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between relative z-10">
-          <div className="text-beat-yellow text-5xl font-black italic beat-text-stroke mb-4 md:mb-0">
-            Aguardem
-          </div>
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-center relative z-10">
           <div className="flex gap-4">
-            <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e" alt="" className="h-24 md:h-32 animate-bounce" referrerPolicy="no-referrer" />
+            {visualSettings.tiki_url && (
+              <img src={visualSettings.tiki_url} alt="" className="h-24 md:h-32 animate-bounce" referrerPolicy="no-referrer" />
+            )}
           </div>
         </div>
       </div>

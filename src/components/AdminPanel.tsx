@@ -41,6 +41,11 @@ export default function AdminPanel() {
 
   const [generalSettings, setGeneralSettings] = useState({
     logo_url: LOGO_URL,
+    tiki_url: '',
+    palm_url: '',
+    crack1_url: '',
+    crack2_url: '',
+    texture_url: '',
     global_carousel: [] as any[]
   });
 
@@ -72,12 +77,19 @@ export default function AdminPanel() {
   const handleSaveSettings = async () => {
     try {
       const snapshot = await getDocs(collection(db, SETTINGS_COLLECTION));
+      const settingsData = {
+        logo_url: generalSettings.logo_url,
+        tiki_url: generalSettings.tiki_url,
+        palm_url: generalSettings.palm_url,
+        crack1_url: generalSettings.crack1_url,
+        crack2_url: generalSettings.crack2_url,
+        texture_url: generalSettings.texture_url,
+      };
+
       if (snapshot.empty) {
-        await addDoc(collection(db, SETTINGS_COLLECTION), { logo_url: generalSettings.logo_url });
+        await addDoc(collection(db, SETTINGS_COLLECTION), settingsData);
       } else {
-        // For simplicity in this demo, we just add another or update the first one
-        // In a real app we'd use setDoc with a fixed ID
-        await addDoc(collection(db, SETTINGS_COLLECTION), { logo_url: generalSettings.logo_url });
+        await updateDoc(doc(db, SETTINGS_COLLECTION, snapshot.docs[0].id), settingsData);
       }
       alert('Configurações salvas!');
     } catch (err) {
@@ -532,6 +544,46 @@ export default function AdminPanel() {
                     Salvar Logo
                   </button>
                 </div>
+              </div>
+
+              <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 space-y-6 md:col-span-2">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-beat-yellow">
+                  <ImageIcon className="w-6 h-6" /> Identidade Visual (PNGs Decorativos)
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { label: 'Tiki Personagem (tiki.png)', field: 'tiki_url' },
+                    { label: 'Palmeira Flamejante (palm.png)', field: 'palm_url' },
+                    { label: 'Rachadura 1 (crack1.png)', field: 'crack1_url' },
+                    { label: 'Rachadura 2 (crack2.png)', field: 'crack2_url' },
+                    { label: 'Textura Fundo (texture.png)', field: 'texture_url' },
+                  ].map((item) => (
+                    <div key={item.field} className="p-4 bg-black rounded-xl border border-zinc-800 space-y-3">
+                      <p className="text-xs font-black uppercase text-zinc-500">{item.label}</p>
+                      {generalSettings[item.field as keyof typeof generalSettings] && (
+                        <img src={generalSettings[item.field as keyof typeof generalSettings] as string} className="h-20 mx-auto object-contain" alt="Preview" />
+                      )}
+                      <input 
+                        type="file" 
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => setGeneralSettings({ ...generalSettings, [item.field]: reader.result as string });
+                            reader.readAsDataURL(file);
+                          }
+                        }} 
+                        className="w-full text-[10px] text-zinc-500" 
+                      />
+                    </div>
+                  ))}
+                </div>
+                <button 
+                  onClick={handleSaveSettings}
+                  className="w-full bg-beat-green py-3 rounded-xl font-bold text-black"
+                >
+                  Salvar Identidade Visual
+                </button>
               </div>
 
               <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 space-y-6 md:col-span-2">

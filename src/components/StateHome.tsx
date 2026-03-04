@@ -21,6 +21,7 @@ export default function StateHome() {
   const { slug } = useParams();
   const [state, setState] = useState<any>(null);
   const [logoUrl, setLogoUrl] = useState(LOGO_URL_DEFAULT);
+  const [visualSettings, setVisualSettings] = useState<any>({});
   const [globalCarousel, setGlobalCarousel] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -68,10 +69,12 @@ export default function StateHome() {
         const carouselSnapshot = await getDocs(carouselQ);
         const carousel = carouselSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // Fetch Settings (Logo)
+        // Fetch Settings (Logo and Visual Identity)
         const settingsSnap = await getDocs(collection(db, SETTINGS_COLLECTION));
         if (!settingsSnap.empty) {
-          setLogoUrl(settingsSnap.docs[0].data().logo_url || LOGO_URL_DEFAULT);
+          const data = settingsSnap.docs[0].data();
+          setLogoUrl(data.logo_url || LOGO_URL_DEFAULT);
+          setVisualSettings(data);
         }
 
         // Fetch Global Carousel
@@ -133,84 +136,105 @@ export default function StateHome() {
   return (
     <div className="min-h-screen bg-beat-pink text-white selection:bg-beat-green selection:text-black relative overflow-x-hidden">
       {/* Background Textures/Cracks */}
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/401a755b-4375-4927-910c-99f57989393e"
-        alt=""
-        className="absolute top-0 left-0 w-full opacity-20 pointer-events-none z-0"
-        referrerPolicy="no-referrer"
-      />
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/64062086-486a-4976-857e-07318f773634"
-        alt=""
-        className="absolute top-[1200px] left-0 w-full opacity-20 pointer-events-none z-0"
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.crack1_url && (
+        <img 
+          src={visualSettings.crack1_url}
+          alt=""
+          className="absolute top-0 left-0 w-full opacity-20 pointer-events-none z-0"
+          referrerPolicy="no-referrer"
+        />
+      )}
+      {visualSettings.crack2_url && (
+        <img 
+          src={visualSettings.crack2_url}
+          alt=""
+          className="absolute top-[1200px] left-0 w-full opacity-20 pointer-events-none z-0"
+          referrerPolicy="no-referrer"
+        />
+      )}
 
       {/* Decorative Assets */}
-      <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923"
-        alt=""
-        className="absolute top-40 left-[-50px] w-64 opacity-40 rotate-[-15deg] pointer-events-none z-0"
-        animate={{ y: [0, -20, 0], rotate: [-15, -10, -15] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        referrerPolicy="no-referrer"
-      />
-      <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923"
-        alt=""
-        className="absolute top-[800px] right-[-100px] w-80 opacity-30 rotate-[20deg] pointer-events-none z-0"
-        animate={{ y: [0, 30, 0], rotate: [20, 25, 20] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        referrerPolicy="no-referrer"
-      />
-      <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
-        alt=""
-        className="absolute top-[400px] right-10 w-48 opacity-40 pointer-events-none z-0"
-        animate={{ y: [0, 20, 0], scale: [1, 1.05, 1] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        referrerPolicy="no-referrer"
-      />
-      <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
-        alt=""
-        className="absolute bottom-[200px] left-10 w-64 opacity-40 pointer-events-none z-0"
-        animate={{ y: [0, -30, 0], rotate: [0, 5, 0] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.palm_url && (
+        <>
+          <motion.img 
+            src={visualSettings.palm_url}
+            alt=""
+            className="absolute top-40 left-[-50px] w-64 opacity-40 rotate-[-15deg] pointer-events-none z-0"
+            animate={{ y: [0, -20, 0], rotate: [-15, -10, -15] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            referrerPolicy="no-referrer"
+          />
+          <motion.img 
+            src={visualSettings.palm_url}
+            alt=""
+            className="absolute top-[800px] right-[-100px] w-80 opacity-30 rotate-[20deg] pointer-events-none z-0"
+            animate={{ y: [0, 30, 0], rotate: [20, 25, 20] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            referrerPolicy="no-referrer"
+          />
+        </>
+      )}
 
-      <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923"
-        alt=""
-        className="absolute top-[2200px] left-[-100px] w-96 opacity-40 rotate-[10deg] pointer-events-none z-0"
-        animate={{ x: [0, 20, 0], y: [0, -20, 0] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.tiki_url && (
+        <>
+          <motion.img 
+            src={visualSettings.tiki_url}
+            alt=""
+            className="absolute top-[400px] right-10 w-48 opacity-40 pointer-events-none z-0"
+            animate={{ y: [0, 20, 0], scale: [1, 1.05, 1] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            referrerPolicy="no-referrer"
+          />
+          <motion.img 
+            src={visualSettings.tiki_url}
+            alt=""
+            className="absolute bottom-[200px] left-10 w-64 opacity-40 pointer-events-none z-0"
+            animate={{ y: [0, -30, 0], rotate: [0, 5, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            referrerPolicy="no-referrer"
+          />
+        </>
+      )}
 
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/401a755b-4375-4927-910c-99f57989393e"
-        alt=""
-        className="absolute top-[100px] right-[-50px] w-64 opacity-20 pointer-events-none z-0"
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.palm_url && (
+        <motion.img 
+          src={visualSettings.palm_url}
+          alt=""
+          className="absolute top-[2200px] left-[-100px] w-96 opacity-40 rotate-[10deg] pointer-events-none z-0"
+          animate={{ x: [0, 20, 0], y: [0, -20, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          referrerPolicy="no-referrer"
+        />
+      )}
 
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/64062086-486a-4976-857e-07318f773634"
-        alt=""
-        className="absolute top-[1200px] left-[-50px] w-64 opacity-20 pointer-events-none z-0"
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.crack1_url && (
+        <img 
+          src={visualSettings.crack1_url}
+          alt=""
+          className="absolute top-[100px] right-[-50px] w-64 opacity-20 pointer-events-none z-0"
+          referrerPolicy="no-referrer"
+        />
+      )}
 
-      <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923"
-        alt=""
-        className="absolute bottom-[500px] left-[-50px] w-48 opacity-30 pointer-events-none z-0"
-        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        referrerPolicy="no-referrer"
-      />
+      {visualSettings.crack2_url && (
+        <img 
+          src={visualSettings.crack2_url}
+          alt=""
+          className="absolute top-[1200px] left-[-50px] w-64 opacity-20 pointer-events-none z-0"
+          referrerPolicy="no-referrer"
+        />
+      )}
+
+      {logoUrl && (
+        <motion.img 
+          src={logoUrl}
+          alt=""
+          className="absolute bottom-[500px] left-[-50px] w-48 opacity-30 pointer-events-none z-0"
+          animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          referrerPolicy="no-referrer"
+        />
+      )}
 
       {/* Header Logo */}
       <header className="py-12 flex justify-center relative overflow-hidden">
@@ -273,7 +297,9 @@ export default function StateHome() {
       {/* Pre-registration Form or Closed Message */}
       <section className="bg-beat-blue py-24 px-6 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/textura.png" alt="" className="w-full h-full object-cover" />
+          {visualSettings.texture_url && (
+            <img src={visualSettings.texture_url} alt="" className="w-full h-full object-cover" />
+          )}
         </div>
         <div className="max-w-4xl mx-auto relative z-10">
           {state.pre_registration_enabled !== false ? (
@@ -399,7 +425,9 @@ export default function StateHome() {
       {state.carousel && state.carousel.length > 0 && (
         <section className="py-24 bg-beat-green overflow-hidden relative">
           <div className="absolute inset-0 opacity-10">
-            <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/textura-2.png" alt="" className="w-full h-full object-cover" />
+            {visualSettings.texture_url && (
+              <img src={visualSettings.texture_url} alt="" className="w-full h-full object-cover" />
+            )}
           </div>
           <div className="max-w-7xl mx-auto px-6 relative z-10">
             <h3 className="text-5xl md:text-7xl font-black uppercase italic mb-16 text-center beat-text-stroke text-white">Edições Anteriores</h3>
@@ -433,7 +461,9 @@ export default function StateHome() {
       {globalCarousel.length > 0 && (
         <section className="py-24 bg-beat-yellow overflow-hidden relative">
           <div className="absolute inset-0 opacity-10">
-            <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/textura-2.png" alt="" className="w-full h-full object-cover" />
+            {visualSettings.texture_url && (
+              <img src={visualSettings.texture_url} alt="" className="w-full h-full object-cover" />
+            )}
           </div>
           <div className="max-w-7xl mx-auto px-6 relative z-10">
             <h3 className="text-5xl md:text-7xl font-black uppercase italic mb-16 text-center beat-text-stroke text-white">Momentos Beat Fest</h3>
