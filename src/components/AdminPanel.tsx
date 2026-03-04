@@ -16,24 +16,52 @@ export default function AdminPanel() {
     sales_location: ''
   });
 
+  const [dbStatus, setDbStatus] = useState<'loading' | 'connected' | 'error'>('loading');
+
   useEffect(() => {
     fetchStates();
     fetchLeads();
+    checkDb();
   }, []);
+
+  const checkDb = async () => {
+    try {
+      const res = await fetch('/api/states');
+      if (res.ok) setDbStatus('connected');
+      else setDbStatus('error');
+    } catch {
+      setDbStatus('error');
+    }
+  };
 
   const fetchStates = () => fetch('/api/states').then(res => res.json()).then(setStates);
   const fetchLeads = () => fetch('/api/admin/leads').then(res => res.json()).then(setLeads);
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleAddState = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/admin/states', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newState)
-    });
-    setNewState({ name: '', slug: '', cover_image: '', banner_desktop: '', banner_mobile: '', event_date: '', sales_location: '' });
-    setIsAdding(false);
-    fetchStates();
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/states', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newState)
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao salvar estado');
+      }
+
+      setNewState({ name: '', slug: '', cover_image: '', banner_desktop: '', banner_mobile: '', event_date: '', sales_location: '' });
+      setIsAdding(false);
+      fetchStates();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message);
+    }
   };
 
   const handleDeleteState = async (id: string) => {
@@ -60,7 +88,16 @@ export default function AdminPanel() {
       <aside className="w-64 bg-zinc-900 border-r border-zinc-800 p-6 flex flex-col gap-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-beat-pink rounded-lg flex items-center justify-center font-black">BF</div>
-          <span className="font-bold text-xl">Admin Panel</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-xl">Admin Panel</span>
+            <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full w-fit ${
+              dbStatus === 'connected' ? 'bg-green-500/20 text-green-500' : 
+              dbStatus === 'error' ? 'bg-red-500/20 text-red-500' : 
+              'bg-zinc-800 text-zinc-500'
+            }`}>
+              {dbStatus === 'connected' ? 'Firebase OK' : dbStatus === 'error' ? 'Firebase Error' : 'Checking...'}
+            </span>
+          </div>
         </div>
 
         <nav className="flex flex-col gap-2">
@@ -148,9 +185,16 @@ export default function AdminPanel() {
                       onChange={e => setNewState({...newState, sales_location: e.target.value})}
                     />
                   </div>
-                  <div className="md:col-span-2 flex gap-4">
-                    <button type="submit" className="bg-beat-green px-8 py-3 rounded-xl font-bold">Salvar</button>
-                    <button type="button" onClick={() => setIsAdding(false)} className="bg-zinc-800 px-8 py-3 rounded-xl font-bold">Cancelar</button>
+                  <div className="md:col-span-2 flex flex-col gap-4">
+                    {error && (
+                      <div className="bg-red-500/20 text-red-500 p-4 rounded-xl border border-red-500/30 font-bold">
+                        {error}
+                      </div>
+                    )}
+                    <div className="flex gap-4">
+                      <button type="submit" className="bg-beat-green px-8 py-3 rounded-xl font-bold">Salvar</button>
+                      <button type="button" onClick={() => setIsAdding(false)} className="bg-zinc-800 px-8 py-3 rounded-xl font-bold">Cancelar</button>
+                    </div>
                   </div>
                 </form>
               </div>

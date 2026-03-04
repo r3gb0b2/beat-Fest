@@ -34,14 +34,20 @@ async function startServer() {
   });
 
   app.post("/api/admin/states", async (req, res) => {
-    if (!db) return res.status(500).json({ error: "DB not initialized" });
+    if (!db) {
+      console.error("Attempted to create state but Firebase DB is not initialized.");
+      return res.status(500).json({ error: "DB not initialized" });
+    }
     const { name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location } = req.body;
     try {
+      console.log(`Creating state: ${name} (${slug})`);
       const docRef = await db.collection("states").add({
         name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location, active: 1
       });
+      console.log(`State created successfully with ID: ${docRef.id}`);
       res.json({ id: docRef.id });
     } catch (e: any) {
+      console.error("Error creating state in Firestore:", e);
       res.status(400).json({ error: e.message });
     }
   });
