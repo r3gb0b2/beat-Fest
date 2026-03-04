@@ -35,6 +35,21 @@ export default function StateHome() {
   });
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
 
+  const formatWhatsApp = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 10) {
+      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3').substring(0, 14);
+    }
+    return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3').substring(0, 15);
+  };
+
+  const formatCPF = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    return numbers
+      .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+      .substring(0, 14);
+  };
+
   useEffect(() => {
     const fetchState = async () => {
       try {
@@ -116,7 +131,69 @@ export default function StateHome() {
   if (!state) return <div className="min-h-screen bg-beat-pink flex items-center justify-center font-black text-white text-3xl italic uppercase beat-text-stroke">Estado não encontrado.</div>;
 
   return (
-    <div className="min-h-screen bg-beat-pink text-white selection:bg-beat-green selection:text-black">
+    <div className="min-h-screen bg-beat-pink text-white selection:bg-beat-green selection:text-black relative overflow-x-hidden">
+      {/* Decorative Assets */}
+      <motion.img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/7798797f-8e4d-4e94-966a-127931c80186"
+        alt=""
+        className="absolute top-40 left-[-50px] w-64 opacity-40 rotate-[-15deg] pointer-events-none z-0"
+        animate={{ y: [0, -20, 0], rotate: [-15, -10, -15] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        referrerPolicy="no-referrer"
+      />
+      <motion.img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923"
+        alt=""
+        className="absolute top-[800px] right-[-100px] w-80 opacity-30 rotate-[20deg] pointer-events-none z-0"
+        animate={{ y: [0, 30, 0], rotate: [20, 25, 20] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        referrerPolicy="no-referrer"
+      />
+      <img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/97216f49-8e42-4916-8321-c17882903332"
+        alt=""
+        className="absolute top-[1500px] left-0 w-full opacity-10 pointer-events-none z-0"
+        referrerPolicy="no-referrer"
+      />
+      <img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
+        alt=""
+        className="absolute bottom-0 right-0 w-full opacity-10 pointer-events-none z-0"
+        referrerPolicy="no-referrer"
+      />
+
+      <motion.img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923"
+        alt=""
+        className="absolute top-[2200px] left-[-100px] w-96 opacity-40 rotate-[10deg] pointer-events-none z-0"
+        animate={{ x: [0, 20, 0], y: [0, -20, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        referrerPolicy="no-referrer"
+      />
+
+      <img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/401a755b-4375-4927-910c-99f57989393e"
+        alt=""
+        className="absolute top-[100px] right-[-50px] w-64 opacity-20 pointer-events-none z-0"
+        referrerPolicy="no-referrer"
+      />
+
+      <img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/64062086-486a-4976-857e-07318f773634"
+        alt=""
+        className="absolute top-[1200px] left-[-50px] w-64 opacity-20 pointer-events-none z-0"
+        referrerPolicy="no-referrer"
+      />
+
+      <motion.img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923"
+        alt=""
+        className="absolute bottom-[500px] left-[-50px] w-48 opacity-30 pointer-events-none z-0"
+        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        referrerPolicy="no-referrer"
+      />
+
       {/* Header Logo */}
       <header className="py-12 flex justify-center relative overflow-hidden">
         <div className="absolute inset-0 bg-beat-green rounded-[40%_60%_70%_30%/40%_50%_60%_40%] scale-150 blur-3xl opacity-30 -z-10" />
@@ -197,7 +274,7 @@ export default function StateHome() {
                     placeholder="(00) 00000-0000"
                     className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                     value={formData.whatsapp}
-                    onChange={e => setFormData({...formData, whatsapp: e.target.value})}
+                    onChange={e => setFormData({...formData, whatsapp: formatWhatsApp(e.target.value)})}
                   />
                 </div>
                 <div className="space-y-1">
@@ -229,7 +306,7 @@ export default function StateHome() {
                     placeholder="000.000.000-00"
                     className="w-full bg-white text-black border-4 border-black rounded-xl p-3 font-bold placeholder:text-zinc-400 focus:ring-4 ring-beat-pink outline-none transition-all"
                     value={formData.cpf}
-                    onChange={e => setFormData({...formData, cpf: e.target.value})}
+                    onChange={e => setFormData({...formData, cpf: formatCPF(e.target.value)})}
                   />
                 </div>
                 <div className="space-y-1">

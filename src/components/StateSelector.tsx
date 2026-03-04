@@ -44,15 +44,29 @@ export default function StateSelector() {
     <div className="min-h-screen bg-beat-pink flex flex-col items-center justify-between overflow-hidden relative">
       {/* Decorative Elements from Assets */}
       <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/palmeira.png" 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923" 
         alt="" 
         className="absolute top-10 left-10 w-32 md:w-48 opacity-80 rotate-[-15deg] pointer-events-none"
         referrerPolicy="no-referrer"
       />
       <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/palmeira.png" 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923" 
         alt="" 
         className="absolute top-20 right-[-20px] w-32 md:w-48 opacity-80 rotate-[20deg] pointer-events-none scale-x-[-1]"
+        referrerPolicy="no-referrer"
+      />
+
+      <img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/401a755b-4375-4927-910c-99f57989393e"
+        alt=""
+        className="absolute bottom-40 left-[-50px] w-64 opacity-20 pointer-events-none z-0"
+        referrerPolicy="no-referrer"
+      />
+
+      <img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/64062086-486a-4976-857e-07318f773634"
+        alt=""
+        className="absolute bottom-20 right-[-50px] w-64 opacity-20 pointer-events-none z-0"
         referrerPolicy="no-referrer"
       />
 
@@ -115,7 +129,7 @@ export default function StateSelector() {
             Aguardem
           </div>
           <div className="flex gap-4">
-            <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/src/assets/boneco.png" alt="" className="h-24 md:h-32 animate-bounce" referrerPolicy="no-referrer" />
+            <img src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e" alt="" className="h-24 md:h-32 animate-bounce" referrerPolicy="no-referrer" />
           </div>
         </div>
       </div>
