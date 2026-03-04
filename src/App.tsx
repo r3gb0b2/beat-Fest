@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import StateSelector from './components/StateSelector';
 import StateHome from './components/StateHome';
 import AdminPanel from './components/AdminPanel';

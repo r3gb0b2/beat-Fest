@@ -36,7 +36,7 @@ export default function AdminPanel() {
     fetchStates();
   };
 
-  const handleDeleteState = async (id: number) => {
+  const handleDeleteState = async (id: string) => {
     if (confirm('Tem certeza?')) {
       await fetch(`/api/admin/states/${id}`, { method: 'DELETE' });
       fetchStates();
