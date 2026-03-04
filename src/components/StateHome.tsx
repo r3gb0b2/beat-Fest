@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { MapPin, Calendar, Instagram, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { db } from '../lib/firebase-client';
+import { 
+  collection, 
+  getDocs, 
+  query, 
+  where, 
+  limit, 
+  addDoc 
+} from 'firebase/firestore';
 
 export default function StateHome() {
   const { slug } = useParams();
@@ -20,12 +29,31 @@ export default function StateHome() {
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
 
   useEffect(() => {
-    fetch(`/api/states/${slug}`)
-      .then(res => res.json())
-      .then(data => {
-        setState(data);
+    const fetchState = async () => {
+      try {
+        const q = query(collection(db, 'states'), where('slug', '==', slug), limit(1));
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          setLoading(false);
+          return;
+        }
+
+        const stateDoc = snapshot.docs[0];
+        const stateData = stateDoc.data();
+        
+        const carouselQ = query(collection(db, 'carousel_images'), where('state_id', '==', stateDoc.id));
+        const carouselSnapshot = await getDocs(carouselQ);
+        const carousel = carouselSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        setState({ id: stateDoc.id, ...stateData, carousel });
         setLoading(false);
-      });
+      } catch (err) {
+        console.error('Error fetching state:', err);
+        setLoading(false);
+      }
+    };
+    fetchState();
   }, [slug]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,14 +61,22 @@ export default function StateHome() {
     setStatus({ type: null, message: '' });
 
     try {
-      const res = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, state_id: state.id })
-      });
-      const data = await res.json();
+      // Check for duplicates
+      const emailQ = query(collection(db, 'leads'), where('email', '==', formData.email), limit(1));
+      const emailCheck = await getDocs(emailQ);
+      
+      const cpfQ = query(collection(db, 'leads'), where('cpf', '==', formData.cpf), limit(1));
+      const cpfCheck = await getDocs(cpfQ);
+      
+      if (!emailCheck.empty || !cpfCheck.empty) {
+        throw new Error('E-mail ou CPF já cadastrado.');
+      }
 
-      if (!res.ok) throw new Error(data.error);
+      await addDoc(collection(db, 'leads'), {
+        ...formData,
+        state_id: state.id,
+        created_at: new Date().toISOString()
+      });
 
       setStatus({ type: 'success', message: 'Cadastro realizado com sucesso! Fique atento às novidades.' });
       setFormData({
@@ -54,7 +90,7 @@ export default function StateHome() {
         cpf: ''
       });
     } catch (err: any) {
-      setStatus({ type: 'error', message: err.message });
+      setStatus({ type: 'error', message: err.message || 'Erro ao realizar cadastro. Verifique as regras do Firestore.' });
     }
   };
 

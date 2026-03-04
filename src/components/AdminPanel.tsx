@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Image as ImageIcon, Users, Layout, Map, LogOut } from 'lucide-react';
+import { db } from '../lib/firebase-client';
+import { 
+  collection, 
+  getDocs, 
+  addDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  orderBy,
+  getDoc
+} from 'firebase/firestore';
 
 export default function AdminPanel() {
   const [view, setView] = useState<'states' | 'leads'>('states');
@@ -21,21 +32,38 @@ export default function AdminPanel() {
   useEffect(() => {
     fetchStates();
     fetchLeads();
-    checkDb();
+    setDbStatus('connected');
   }, []);
 
-  const checkDb = async () => {
+  const fetchStates = async () => {
     try {
-      const res = await fetch('/api/states');
-      if (res.ok) setDbStatus('connected');
-      else setDbStatus('error');
-    } catch {
+      const snapshot = await getDocs(collection(db, 'states'));
+      const statesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setStates(statesList);
+    } catch (err) {
+      console.error(err);
       setDbStatus('error');
     }
   };
 
-  const fetchStates = () => fetch('/api/states').then(res => res.json()).then(setStates);
-  const fetchLeads = () => fetch('/api/admin/leads').then(res => res.json()).then(setLeads);
+  const fetchLeads = async () => {
+    try {
+      const q = query(collection(db, 'leads'), orderBy('created_at', 'desc'));
+      const snapshot = await getDocs(q);
+      const leadsList = await Promise.all(snapshot.docs.map(async leadDoc => {
+        const data = leadDoc.data();
+        let stateName = 'N/A';
+        try {
+          const stateSnap = await getDoc(doc(db, 'states', data.state_id));
+          if (stateSnap.exists()) stateName = stateSnap.data().name;
+        } catch (e) {}
+        return { id: leadDoc.id, ...data, state_name: stateName };
+      }));
+      setLeads(leadsList);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const [error, setError] = useState<string | null>(null);
 
@@ -43,31 +71,27 @@ export default function AdminPanel() {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch('/api/admin/states', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newState)
+      await addDoc(collection(db, 'states'), {
+        ...newState,
+        active: 1
       });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || 'Erro ao salvar estado');
-      }
-
       setNewState({ name: '', slug: '', cover_image: '', banner_desktop: '', banner_mobile: '', event_date: '', sales_location: '' });
       setIsAdding(false);
       fetchStates();
     } catch (err: any) {
       console.error(err);
-      setError(err.message);
+      setError(err.message || 'Erro ao salvar no Firebase. Verifique as regras do Firestore.');
     }
   };
 
   const handleDeleteState = async (id: string) => {
     if (confirm('Tem certeza?')) {
-      await fetch(`/api/admin/states/${id}`, { method: 'DELETE' });
-      fetchStates();
+      try {
+        await deleteDoc(doc(db, 'states', id));
+        fetchStates();
+      } catch (err: any) {
+        alert('Erro ao excluir: ' + err.message);
+      }
     }
   };
 

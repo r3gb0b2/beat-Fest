@@ -1,15 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { db } from '../lib/firebase-client';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export default function StateSelector() {
   const [states, setStates] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('/api/states')
-      .then(res => res.json())
-      .then(data => setStates(data));
+    const fetchStates = async () => {
+      try {
+        const q = query(collection(db, 'states'), where('active', '==', 1));
+        const snapshot = await getDocs(q);
+        const statesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setStates(statesList);
+      } catch (err) {
+        console.error('Error fetching states:', err);
+      }
+    };
+    fetchStates();
   }, []);
 
   return (
