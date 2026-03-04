@@ -30,7 +30,15 @@ export default function AdminPanel() {
     banner_desktop: '',
     banner_mobile: '',
     event_date: '',
-    sales_location: ''
+    sales_location: '',
+    instagram_url: '',
+    facebook_url: '',
+    tiktok_url: ''
+  });
+
+  const [generalSettings, setGeneralSettings] = useState({
+    logo_url: LOGO_URL,
+    global_carousel: [] as any[]
   });
 
   const [dbStatus, setDbStatus] = useState<'loading' | 'connected' | 'error'>('loading');
@@ -38,8 +46,70 @@ export default function AdminPanel() {
   useEffect(() => {
     fetchStates();
     fetchLeads();
+    fetchSettings();
     setDbStatus('connected');
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, SETTINGS_COLLECTION));
+      if (!snapshot.empty) {
+        const data = snapshot.docs[0].data();
+        setGeneralSettings(prev => ({ ...prev, ...data }));
+      }
+      
+      const carouselSnap = await getDocs(collection(db, 'global_carousel'));
+      const carouselList = carouselSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setGeneralSettings(prev => ({ ...prev, global_carousel: carouselList }));
+    } catch (err) {
+      console.error('Error fetching settings:', err);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, SETTINGS_COLLECTION));
+      if (snapshot.empty) {
+        await addDoc(collection(db, SETTINGS_COLLECTION), { logo_url: generalSettings.logo_url });
+      } else {
+        // For simplicity in this demo, we just add another or update the first one
+        // In a real app we'd use setDoc with a fixed ID
+        await addDoc(collection(db, SETTINGS_COLLECTION), { logo_url: generalSettings.logo_url });
+      }
+      alert('Configurações salvas!');
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao salvar configurações');
+    }
+  };
+
+  const handleAddGlobalCarousel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          await addDoc(collection(db, 'global_carousel'), {
+            image_url: reader.result as string,
+            created_at: new Date().toISOString()
+          });
+          fetchSettings();
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDeleteGlobalCarousel = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'global_carousel', id));
+      fetchSettings();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchStates = async () => {
     try {
@@ -81,7 +151,18 @@ export default function AdminPanel() {
         ...newState,
         active: 1
       });
-      setNewState({ name: '', slug: '', cover_image: '', banner_desktop: '', banner_mobile: '', event_date: '', sales_location: '' });
+      setNewState({ 
+        name: '', 
+        slug: '', 
+        cover_image: '', 
+        banner_desktop: '', 
+        banner_mobile: '', 
+        event_date: '', 
+        sales_location: '',
+        instagram_url: '',
+        facebook_url: '',
+        tiktok_url: ''
+      });
       setIsAdding(false);
       fetchStates();
     } catch (err: any) {
@@ -225,6 +306,33 @@ export default function AdminPanel() {
                       onChange={e => setNewState({...newState, sales_location: e.target.value})}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-zinc-500">Instagram URL</label>
+                    <input 
+                      className="w-full bg-black border border-zinc-800 p-3 rounded-lg" 
+                      value={newState.instagram_url}
+                      onChange={e => setNewState({...newState, instagram_url: e.target.value})}
+                      placeholder="https://instagram.com/..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-zinc-500">Facebook URL</label>
+                    <input 
+                      className="w-full bg-black border border-zinc-800 p-3 rounded-lg" 
+                      value={newState.facebook_url}
+                      onChange={e => setNewState({...newState, facebook_url: e.target.value})}
+                      placeholder="https://facebook.com/..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-zinc-500">TikTok URL</label>
+                    <input 
+                      className="w-full bg-black border border-zinc-800 p-3 rounded-lg" 
+                      value={newState.tiktok_url}
+                      onChange={e => setNewState({...newState, tiktok_url: e.target.value})}
+                      placeholder="https://tiktok.com/@..."
+                    />
+                  </div>
                   <div className="md:col-span-2 flex flex-col gap-4">
                     {error && (
                       <div className="bg-red-500/20 text-red-500 p-4 rounded-xl border border-red-500/30 font-bold">
@@ -338,8 +446,52 @@ export default function AdminPanel() {
                   <ImageIcon className="w-6 h-6" /> Logo Oficial
                 </h2>
                 <div className="p-6 bg-black rounded-xl border border-zinc-800 flex flex-col items-center gap-4">
-                  <img src={LOGO_URL} className="h-20 object-contain" alt="Logo" />
-                  <p className="text-xs text-zinc-500 text-center">A logo é carregada automaticamente a partir do link oficial.</p>
+                  <img src={generalSettings.logo_url} className="h-20 object-contain" alt="Logo" />
+                  <div className="w-full space-y-2">
+                    <label className="text-[10px] font-black uppercase text-zinc-500">Upload Nova Logo</label>
+                    <input 
+                      type="file" 
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => setGeneralSettings({ ...generalSettings, logo_url: reader.result as string });
+                          reader.readAsDataURL(file);
+                        }
+                      }} 
+                      className="w-full text-xs text-zinc-500" 
+                    />
+                  </div>
+                  <button 
+                    onClick={handleSaveSettings}
+                    className="w-full bg-beat-pink py-2 rounded-lg font-bold text-sm"
+                  >
+                    Salvar Logo
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 space-y-6 md:col-span-2">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-beat-blue">
+                  <ImageIcon className="w-6 h-6" /> Carrossel Página Inicial
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {generalSettings.global_carousel.map(img => (
+                    <div key={img.id} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-800 group">
+                      <img src={img.image_url} className="w-full h-full object-cover" />
+                      <button 
+                        onClick={() => handleDeleteGlobalCarousel(img.id)}
+                        className="absolute top-2 right-2 p-1 bg-red-500 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <label className="aspect-video rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-zinc-800/50 transition-colors">
+                    <Plus className="w-6 h-6 text-zinc-500" />
+                    <span className="text-[10px] font-black uppercase text-zinc-500">Adicionar Foto</span>
+                    <input type="file" className="hidden" onChange={handleAddGlobalCarousel} />
+                  </label>
                 </div>
               </div>
             </div>

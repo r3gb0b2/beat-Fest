@@ -4,25 +4,40 @@ import { motion } from 'motion/react';
 import { db } from '../lib/firebase-client';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
-const LOGO_URL = "https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923";
+const LOGO_URL_DEFAULT = "https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923";
 const STATES_COLLECTION = "beatfest_states_v2";
+const SETTINGS_COLLECTION = "beatfest_settings_v1";
 
 export default function StateSelector() {
   const [states, setStates] = useState<any[]>([]);
+  const [logoUrl, setLogoUrl] = useState(LOGO_URL_DEFAULT);
+  const [carousel, setCarousel] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchStates = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch States
         const q = query(collection(db, STATES_COLLECTION), where('active', '==', 1));
         const snapshot = await getDocs(q);
         const statesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setStates(statesList);
+
+        // Fetch Settings (Logo)
+        const settingsSnap = await getDocs(collection(db, SETTINGS_COLLECTION));
+        if (!settingsSnap.empty) {
+          setLogoUrl(settingsSnap.docs[0].data().logo_url || LOGO_URL_DEFAULT);
+        }
+
+        // Fetch Global Carousel
+        const carouselSnap = await getDocs(collection(db, 'global_carousel'));
+        const carouselList = carouselSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCarousel(carouselList);
       } catch (err) {
-        console.error('Error fetching states:', err);
+        console.error('Error fetching data:', err);
       }
     };
-    fetchStates();
+    fetchData();
   }, []);
 
   return (
@@ -52,7 +67,7 @@ export default function StateSelector() {
           <div className="absolute inset-0 bg-beat-green rounded-[40%_60%_70%_30%/40%_50%_60%_40%] scale-150 blur-2xl opacity-50 -z-10" />
           
           <img 
-            src={LOGO_URL} 
+            src={logoUrl} 
             alt="Beat Fest Logo" 
             className="h-40 md:h-56 mx-auto drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]"
             referrerPolicy="no-referrer"
@@ -88,6 +103,28 @@ export default function StateSelector() {
             </motion.div>
           ))}
         </div>
+
+        {/* Global Carousel Section */}
+        {carousel.length > 0 && (
+          <div className="mt-24 w-full max-w-7xl">
+            <h2 className="text-3xl md:text-5xl font-black uppercase italic text-white beat-text-stroke mb-12 text-center tracking-tighter">
+              Momentos Beat Fest
+            </h2>
+            <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide snap-x px-4">
+              {carousel.map((img, idx) => (
+                <motion.div
+                  key={img.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex-none w-[280px] md:w-[450px] aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-2xl snap-center"
+                >
+                  <img src={img.image_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom Blue Section (Aguardem Vibe) */}

@@ -12,13 +12,15 @@ import {
   addDoc 
 } from 'firebase/firestore';
 
-const LOGO_URL = "https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923";
+const LOGO_URL_DEFAULT = "https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/8f97204b-324f-4a00-983c-f91604533923";
 const STATES_COLLECTION = "beatfest_states_v2";
 const LEADS_COLLECTION = "beatfest_leads_v2";
+const SETTINGS_COLLECTION = "beatfest_settings_v1";
 
 export default function StateHome() {
   const { slug } = useParams();
   const [state, setState] = useState<any>(null);
+  const [logoUrl, setLogoUrl] = useState(LOGO_URL_DEFAULT);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     whatsapp: '',
@@ -50,6 +52,12 @@ export default function StateHome() {
         const carouselSnapshot = await getDocs(carouselQ);
         const carousel = carouselSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
+        // Fetch Settings (Logo)
+        const settingsSnap = await getDocs(collection(db, SETTINGS_COLLECTION));
+        if (!settingsSnap.empty) {
+          setLogoUrl(settingsSnap.docs[0].data().logo_url || LOGO_URL_DEFAULT);
+        }
+
         setState({ id: stateDoc.id, ...stateData, carousel });
         setLoading(false);
       } catch (err) {
@@ -108,7 +116,7 @@ export default function StateHome() {
         <div className="absolute inset-0 bg-beat-green rounded-[40%_60%_70%_30%/40%_50%_60%_40%] scale-150 blur-3xl opacity-30 -z-10" />
         <Link to="/">
           <img 
-            src={LOGO_URL} 
+            src={logoUrl} 
             alt="Beat Fest" 
             className="h-24 md:h-32 drop-shadow-2xl"
           />
@@ -305,10 +313,24 @@ export default function StateHome() {
 
       {/* Footer */}
       <footer className="py-16 bg-black text-center text-white">
-        <img src={LOGO_URL} alt="Beat Fest" className="h-16 mx-auto mb-8 opacity-50 grayscale" />
+        <img src={logoUrl} alt="Beat Fest" className="h-16 mx-auto mb-8 opacity-50 grayscale" />
         <p className="font-bold uppercase tracking-widest text-sm opacity-50">© 2026 Beat Fest. Todos os direitos reservados.</p>
         <div className="flex justify-center gap-8 mt-8">
-          <Instagram className="w-8 h-8 hover:text-beat-pink cursor-pointer transition-colors" />
+          {state.instagram_url && (
+            <a href={state.instagram_url} target="_blank" rel="noopener noreferrer">
+              <Instagram className="w-8 h-8 hover:text-beat-pink cursor-pointer transition-colors" />
+            </a>
+          )}
+          {state.facebook_url && (
+            <a href={state.facebook_url} target="_blank" rel="noopener noreferrer">
+              <Send className="w-8 h-8 hover:text-beat-blue cursor-pointer transition-colors rotate-[-45deg]" />
+            </a>
+          )}
+          {state.tiktok_url && (
+            <a href={state.tiktok_url} target="_blank" rel="noopener noreferrer">
+              <div className="w-8 h-8 flex items-center justify-center font-black text-xs border-2 border-white rounded-full hover:text-beat-green hover:border-beat-green transition-colors">TT</div>
+            </a>
+          )}
         </div>
       </footer>
     </div>
