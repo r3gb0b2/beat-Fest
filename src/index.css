@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Anton", sans-serif;
+  
+  --color-beat-pink: #FF4B91;
+  --color-beat-blue: #0077B6;
+  --color-beat-green: #006D5B;
+  --color-beat-yellow: #FFD700;
+  --color-beat-orange: #FF6321;
+}
+
+@layer base {
+  body {
+    @apply bg-black text-white font-sans;
+  }
+}
+
+.beat-gradient {
+  background: linear-gradient(135deg, var(--color-beat-pink) 0%, var(--color-beat-blue) 100%);
+}
+
+.beat-text-stroke {
+  -webkit-text-stroke: 1px black;
+}
