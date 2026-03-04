@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import db from "./db.ts";
+import { db } from "./src/lib/firebase-admin.ts";
 
 async function startServer() {
   const app = express();
@@ -12,87 +12,105 @@ async function startServer() {
   // API Routes
   
   // States
-  app.get("/api/states", (req, res) => {
-    const states = db.prepare("SELECT * FROM states WHERE active = 1").all();
+  app.get("/api/states", async (req, res) => {
+    if (!db) return res.json([]);
+    const snapshot = await db.collection("states").where("active", "==", 1).get();
+    const states = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(states);
   });
 
-  app.get("/api/states/:slug", (req, res) => {
-    const state = db.prepare("SELECT * FROM states WHERE slug = ?").get(req.params.slug);
-    if (!state) return res.status(404).json({ error: "State not found" });
+  app.get("/api/states/:slug", async (req, res) => {
+    if (!db) return res.status(500).json({ error: "DB not initialized" });
+    const snapshot = await db.collection("states").where("slug", "==", req.params.slug).limit(1).get();
+    if (snapshot.empty) return res.status(404).json({ error: "State not found" });
     
-    const carousel = db.prepare("SELECT * FROM carousel_images WHERE state_id = ?").all(state.id);
-    res.json({ ...state, carousel });
+    const stateDoc = snapshot.docs[0];
+    const stateData = stateDoc.data();
+    
+    const carouselSnapshot = await db.collection("carousel_images").where("state_id", "==", stateDoc.id).get();
+    const carousel = carouselSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    res.json({ id: stateDoc.id, ...stateData, carousel });
   });
 
-  app.post("/api/admin/states", (req, res) => {
+  app.post("/api/admin/states", async (req, res) => {
+    if (!db) return res.status(500).json({ error: "DB not initialized" });
     const { name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location } = req.body;
     try {
-      const info = db.prepare(`
-        INSERT INTO states (name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location);
-      res.json({ id: info.lastInsertRowid });
-    } catch (e) {
+      const docRef = await db.collection("states").add({
+        name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location, active: 1
+      });
+      res.json({ id: docRef.id });
+    } catch (e: any) {
       res.status(400).json({ error: e.message });
     }
   });
 
-  app.put("/api/admin/states/:id", (req, res) => {
+  app.put("/api/admin/states/:id", async (req, res) => {
+    if (!db) return res.status(500).json({ error: "DB not initialized" });
     const { name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location } = req.body;
-    db.prepare(`
-      UPDATE states 
-      SET name = ?, slug = ?, cover_image = ?, banner_desktop = ?, banner_mobile = ?, event_date = ?, sales_location = ?
-      WHERE id = ?
-    `).run(name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location, req.params.id);
+    await db.collection("states").doc(req.params.id).update({
+      name, slug, cover_image, banner_desktop, banner_mobile, event_date, sales_location
+    });
     res.json({ success: true });
   });
 
-  app.delete("/api/admin/states/:id", (req, res) => {
-    db.prepare("DELETE FROM states WHERE id = ?").run(req.params.id);
+  app.delete("/api/admin/states/:id", async (req, res) => {
+    if (!db) return res.status(500).json({ error: "DB not initialized" });
+    await db.collection("states").doc(req.params.id).delete();
     res.json({ success: true });
   });
 
   // Carousel
-  app.post("/api/admin/carousel", (req, res) => {
+  app.post("/api/admin/carousel", async (req, res) => {
+    if (!db) return res.status(500).json({ error: "DB not initialized" });
     const { state_id, image_url } = req.body;
-    db.prepare("INSERT INTO carousel_images (state_id, image_url) VALUES (?, ?)").run(state_id, image_url);
+    await db.collection("carousel_images").add({ state_id, image_url });
     res.json({ success: true });
   });
 
-  app.delete("/api/admin/carousel/:id", (req, res) => {
-    db.prepare("DELETE FROM carousel_images WHERE id = ?").run(req.params.id);
+  app.delete("/api/admin/carousel/:id", async (req, res) => {
+    if (!db) return res.status(500).json({ error: "DB not initialized" });
+    await db.collection("carousel_images").doc(req.params.id).delete();
     res.json({ success: true });
   });
 
   // Leads
-  app.post("/api/leads", (req, res) => {
+  app.post("/api/leads", async (req, res) => {
+    if (!db) return res.status(500).json({ error: "DB not initialized" });
     const { state_id, whatsapp, email, dob, instagram, tiktok, profession, education, cpf } = req.body;
     
     // Check for duplicates
-    const existing = db.prepare("SELECT id FROM leads WHERE email = ? OR cpf = ?").get(email, cpf);
-    if (existing) {
+    const emailCheck = await db.collection("leads").where("email", "==", email).limit(1).get();
+    const cpfCheck = await db.collection("leads").where("cpf", "==", cpf).limit(1).get();
+    
+    if (!emailCheck.empty || !cpfCheck.empty) {
       return res.status(400).json({ error: "E-mail ou CPF já cadastrado." });
     }
 
     try {
-      db.prepare(`
-        INSERT INTO leads (state_id, whatsapp, email, dob, instagram, tiktok, profession, education, cpf)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(state_id, whatsapp, email, dob, instagram, tiktok, profession, education, cpf);
+      await db.collection("leads").add({
+        state_id, whatsapp, email, dob, instagram, tiktok, profession, education, cpf,
+        created_at: new Date().toISOString()
+      });
       res.json({ success: true });
-    } catch (e) {
+    } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
   });
 
-  app.get("/api/admin/leads", (req, res) => {
-    const leads = db.prepare(`
-      SELECT l.*, s.name as state_name 
-      FROM leads l 
-      JOIN states s ON l.state_id = s.id 
-      ORDER BY l.created_at DESC
-    `).all();
+  app.get("/api/admin/leads", async (req, res) => {
+    if (!db) return res.json([]);
+    const snapshot = await db.collection("leads").orderBy("created_at", "desc").get();
+    const leads = await Promise.all(snapshot.docs.map(async doc => {
+      const data = doc.data();
+      const stateDoc = await db.collection("states").doc(data.state_id).get();
+      return { 
+        id: doc.id, 
+        ...data, 
+        state_name: stateDoc.exists ? stateDoc.data()?.name : "N/A" 
+      };
+    }));
     res.json(leads);
   });
 
