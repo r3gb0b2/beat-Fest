@@ -12,8 +12,8 @@
 }
 
 @layer base {
-  body {
-    @apply bg-black text-white font-sans;
+  html, body {
+    @apply bg-black text-white font-sans overflow-x-hidden;
   }
 }
 

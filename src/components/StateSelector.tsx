@@ -51,7 +51,7 @@ export default function StateSelector() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-beat-pink flex flex-col items-center justify-between overflow-hidden relative">
+    <div className="min-h-screen bg-beat-pink flex flex-col items-center justify-between relative">
       {/* Decorative Elements from Assets */}
       {visualSettings.palm_url && (
         <>
