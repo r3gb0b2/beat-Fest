@@ -70,6 +70,24 @@ export default function StateSelector() {
         referrerPolicy="no-referrer"
       />
 
+      <motion.img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
+        alt=""
+        className="absolute top-1/2 left-[-100px] w-64 opacity-30 pointer-events-none z-0"
+        animate={{ x: [0, 20, 0], rotate: [0, 10, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        referrerPolicy="no-referrer"
+      />
+
+      <motion.img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
+        alt=""
+        className="absolute top-1/4 right-[-50px] w-48 opacity-30 pointer-events-none z-0"
+        animate={{ y: [0, 30, 0], scale: [1, 1.1, 1] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        referrerPolicy="no-referrer"
+      />
+
       {/* Main Content Area (Green Shape Vibe) */}
       <div className="flex-1 flex flex-col items-center justify-center w-full z-10 px-4 py-20">
         <motion.div 

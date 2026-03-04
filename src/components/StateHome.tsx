@@ -132,9 +132,23 @@ export default function StateHome() {
 
   return (
     <div className="min-h-screen bg-beat-pink text-white selection:bg-beat-green selection:text-black relative overflow-x-hidden">
+      {/* Background Textures/Cracks */}
+      <img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/401a755b-4375-4927-910c-99f57989393e"
+        alt=""
+        className="absolute top-0 left-0 w-full opacity-20 pointer-events-none z-0"
+        referrerPolicy="no-referrer"
+      />
+      <img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/64062086-486a-4976-857e-07318f773634"
+        alt=""
+        className="absolute top-[1200px] left-0 w-full opacity-20 pointer-events-none z-0"
+        referrerPolicy="no-referrer"
+      />
+
       {/* Decorative Assets */}
       <motion.img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/7798797f-8e4d-4e94-966a-127931c80186"
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63683267-3392-498c-843c-662580533923"
         alt=""
         className="absolute top-40 left-[-50px] w-64 opacity-40 rotate-[-15deg] pointer-events-none z-0"
         animate={{ y: [0, -20, 0], rotate: [-15, -10, -15] }}
@@ -149,16 +163,20 @@ export default function StateHome() {
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         referrerPolicy="no-referrer"
       />
-      <img 
-        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/97216f49-8e42-4916-8321-c17882903332"
-        alt=""
-        className="absolute top-[1500px] left-0 w-full opacity-10 pointer-events-none z-0"
-        referrerPolicy="no-referrer"
-      />
-      <img 
+      <motion.img 
         src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
         alt=""
-        className="absolute bottom-0 right-0 w-full opacity-10 pointer-events-none z-0"
+        className="absolute top-[400px] right-10 w-48 opacity-40 pointer-events-none z-0"
+        animate={{ y: [0, 20, 0], scale: [1, 1.05, 1] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        referrerPolicy="no-referrer"
+      />
+      <motion.img 
+        src="https://ais-dev-4xcyr6of7gldh4parsg7su-45902503545.us-west1.run.app/api/attachments/63be9163-549c-4632-9092-be2060100f2e"
+        alt=""
+        className="absolute bottom-[200px] left-10 w-64 opacity-40 pointer-events-none z-0"
+        animate={{ y: [0, -30, 0], rotate: [0, 5, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
         referrerPolicy="no-referrer"
       />
 
