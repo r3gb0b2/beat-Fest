@@ -42,11 +42,17 @@ export default function AdminPanel() {
 
   const [generalSettings, setGeneralSettings] = useState({
     logo_url: LOGO_URL,
+    group_link: '',
     tiki_url: '',
     palm_url: '',
     crack1_url: '',
     crack2_url: '',
     texture_url: '',
+    crown_url: '',
+    heart_url: '',
+    ticket_url: '',
+    hero_bg: '',
+    footer_bg: '',
     global_carousel: [] as any[]
   });
 
@@ -64,7 +70,7 @@ export default function AdminPanel() {
       const snapshot = await getDocs(collection(db, SETTINGS_COLLECTION));
       if (!snapshot.empty) {
         const data = snapshot.docs[0].data();
-        setGeneralSettings(prev => ({ ...prev, logo_url: data.logo_url || LOGO_URL }));
+        setGeneralSettings(prev => ({ ...prev, logo_url: data.logo_url || LOGO_URL, group_link: data.group_link || '' }));
       }
       
       // Fetch Visual Assets individually to avoid 1MB limit
@@ -89,9 +95,9 @@ export default function AdminPanel() {
       // Save Logo in Settings
       const snapshot = await getDocs(collection(db, SETTINGS_COLLECTION));
       if (snapshot.empty) {
-        await addDoc(collection(db, SETTINGS_COLLECTION), { logo_url: generalSettings.logo_url });
+        await addDoc(collection(db, SETTINGS_COLLECTION), { logo_url: generalSettings.logo_url, group_link: generalSettings.group_link });
       } else {
-        await updateDoc(doc(db, SETTINGS_COLLECTION, snapshot.docs[0].id), { logo_url: generalSettings.logo_url });
+        await updateDoc(doc(db, SETTINGS_COLLECTION, snapshot.docs[0].id), { logo_url: generalSettings.logo_url, group_link: generalSettings.group_link });
       }
 
       // Save Visual Assets individually in a separate collection
@@ -101,6 +107,11 @@ export default function AdminPanel() {
         { id: 'crack1_url', url: generalSettings.crack1_url },
         { id: 'crack2_url', url: generalSettings.crack2_url },
         { id: 'texture_url', url: generalSettings.texture_url },
+        { id: 'crown_url', url: generalSettings.crown_url },
+        { id: 'heart_url', url: generalSettings.heart_url },
+        { id: 'ticket_url', url: generalSettings.ticket_url },
+        { id: 'hero_bg', url: generalSettings.hero_bg },
+        { id: 'footer_bg', url: generalSettings.footer_bg },
       ];
 
       for (const asset of assets) {
@@ -564,6 +575,22 @@ export default function AdminPanel() {
                   >
                     Salvar Logo
                   </button>
+
+                  <div className="w-full pt-4 border-t border-zinc-800 space-y-2">
+                    <label className="text-[10px] font-black uppercase text-zinc-500">Link do Botão "EU QUERO" (WhatsApp/Telegram)</label>
+                    <input 
+                      className="w-full bg-black border border-zinc-800 p-3 rounded-lg text-sm" 
+                      value={generalSettings.group_link}
+                      onChange={e => setGeneralSettings({ ...generalSettings, group_link: e.target.value })}
+                      placeholder="https://chat.whatsapp.com/..."
+                    />
+                    <button 
+                      onClick={handleSaveSettings}
+                      className="w-full bg-zinc-800 hover:bg-zinc-700 py-2 rounded-lg font-bold text-xs transition-colors"
+                    >
+                      Salvar Link do Botão
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -578,6 +605,11 @@ export default function AdminPanel() {
                     { label: 'Rachadura 1 (crack1.png)', field: 'crack1_url' },
                     { label: 'Rachadura 2 (crack2.png)', field: 'crack2_url' },
                     { label: 'Textura Fundo (texture.png)', field: 'texture_url' },
+                    { label: 'Coroa (crown.png)', field: 'crown_url' },
+                    { label: 'Coração (heart.png)', field: 'heart_url' },
+                    { label: 'Ingresso (ticket.png)', field: 'ticket_url' },
+                    { label: 'Fundo Cabeçalho / Hero (hero_bg.jpg)', field: 'hero_bg' },
+                    { label: 'Fundo Rodapé / CTA (footer_bg.jpg)', field: 'footer_bg' },
                   ].map((item) => (
                     <div key={item.field} className="p-4 bg-black rounded-xl border border-zinc-800 space-y-3">
                       <p className="text-xs font-black uppercase text-zinc-500">{item.label}</p>
