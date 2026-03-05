@@ -495,6 +495,7 @@ export default function AdminPanel() {
                   <tr>
                     <th className="p-4">Nome/Cidade</th>
                     <th className="p-4">Contato</th>
+                    <th className="p-4">Profissão/Instituição</th>
                     <th className="p-4">CPF</th>
                     <th className="p-4">Data</th>
                   </tr>
@@ -509,6 +510,10 @@ export default function AdminPanel() {
                       <td className="p-4">
                         <div className="text-sm">{lead.whatsapp}</div>
                         <div className="text-xs text-zinc-500">@{lead.instagram}</div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-sm font-bold">{lead.profession || '-'}</div>
+                        <div className="text-xs text-zinc-500">{lead.education || '-'}</div>
                       </td>
                       <td className="p-4 text-sm font-mono">{lead.cpf}</td>
                       <td className="p-4 text-xs text-zinc-500">{new Date(lead.created_at).toLocaleDateString()}</td>

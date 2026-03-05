@@ -100,7 +100,7 @@ export default function StateSelector() {
             animate={{ opacity: 1, y: 0 }}
             src={logoUrl} 
             alt="Beat Fest Logo" 
-            className="h-32 md:h-48 mx-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+            className="h-40 md:h-60 mx-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
             referrerPolicy="no-referrer"
           />
           <motion.p 
@@ -214,7 +214,7 @@ export default function StateSelector() {
             <img 
               src={logoUrl} 
               alt="Beat Fest" 
-              className="h-32 md:h-48"
+              className="h-36 md:h-56"
               referrerPolicy="no-referrer"
             />
             <div className="flex items-center gap-3 text-2xl font-bold">

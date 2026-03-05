@@ -195,7 +195,7 @@ export default function StateHome() {
               animate={{ opacity: 1, y: 0 }}
               src={logoUrl} 
               alt="Beat Fest Logo" 
-              className="h-32 md:h-48 mx-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+              className="h-40 md:h-60 mx-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
               referrerPolicy="no-referrer"
             />
           </Link>
@@ -297,6 +297,26 @@ export default function StateHome() {
                     className="w-full bg-zinc-50 text-black border border-zinc-200 rounded-xl p-4 font-bold placeholder:text-zinc-300 focus:border-red-600 outline-none transition-all"
                     value={formData.tiktok}
                     onChange={e => setFormData({...formData, tiktok: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-zinc-400 ml-1">Profissão</label>
+                  <input 
+                    type="text" 
+                    placeholder="Sua profissão"
+                    className="w-full bg-zinc-50 text-black border border-zinc-200 rounded-xl p-4 font-bold placeholder:text-zinc-300 focus:border-red-600 outline-none transition-all"
+                    value={formData.profession}
+                    onChange={e => setFormData({...formData, profession: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-zinc-400 ml-1">Colégio ou Faculdade</label>
+                  <input 
+                    type="text" 
+                    placeholder="Nome da instituição"
+                    className="w-full bg-zinc-50 text-black border border-zinc-200 rounded-xl p-4 font-bold placeholder:text-zinc-300 focus:border-red-600 outline-none transition-all"
+                    value={formData.education}
+                    onChange={e => setFormData({...formData, education: e.target.value})}
                   />
                 </div>
                 
@@ -424,7 +444,7 @@ export default function StateHome() {
             <img 
               src={logoUrl} 
               alt="Beat Fest" 
-              className="h-32 md:h-48"
+              className="h-36 md:h-56"
               referrerPolicy="no-referrer"
             />
             <div className="flex items-center gap-3 text-2xl font-bold">
